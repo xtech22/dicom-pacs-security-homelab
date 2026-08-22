@@ -1,0 +1,43 @@
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*
+*secrets*
+*token*
+
+# Healthcare / DICOM raw data
+*.dcm
+*.dicom
+
+# Packet captures
+*.pcap
+*.pcapng
+*.cap
+
+# Logs and scan working data
+*.log
+*.gnmap
+*.xml
+
+# Raw evidence is never public
+evidence/raw/*
+!evidence/raw/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak

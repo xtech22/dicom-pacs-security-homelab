@@ -1,0 +1,17 @@
+.gitignore
+LICENSE
+README.md
+SECURITY.md
+assets/.gitkeep
+docs/architecture.md
+docs/evidence-guide.md
+docs/findings.md
+docs/github-upload-steps.md
+docs/methodology.md
+docs/scope.md
+docs/test-matrix.md
+evidence/README.md
+evidence/raw/.gitkeep
+evidence/sanitized/.gitkeep
+scripts/dicom_modifier.py
+scripts/orthanc_log_monitor.py
