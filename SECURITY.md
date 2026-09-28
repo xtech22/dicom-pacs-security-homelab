@@ -1,24 +1,12 @@
 # Security and Responsible Use
 
-This repository documents an intentionally isolated healthcare-security homelab.
+This repository documents an authorized cybersecurity assessment performed in an isolated DICOM/PACS homelab.
 
-## Authorized Use
+- No production healthcare systems were targeted.
+- No real patient data is included.
+- Synthetic DICOM data was used for controlled write-path testing.
+- Exact endpoint addresses and raw evidence are intentionally excluded from the public repository.
 
-All penetration-testing activity documented here is performed against systems owned and controlled by the lab operator.
+Do not use the techniques or scripts in this repository against systems without explicit authorization.
 
-## No Production Targeting
-
-The procedures in this repository must not be used against healthcare, enterprise, public, or third-party systems without explicit authorization.
-
-## Sensitive Data
-
-Do not open a GitHub issue containing:
-
-- credentials
-- patient information
-- private keys
-- tokens
-- unsanitized logs
-- packet captures containing sensitive information
-
-This project does not require real patient data.
+If you identify a secret or sensitive artifact that was accidentally committed, remove it from the repository history and rotate the affected credential before republishing.

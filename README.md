@@ -1,164 +1,63 @@
 # DICOM/PACS Security Homelab
 
-> A segmented healthcare-imaging cybersecurity lab used to validate DICOM/HL7 workflows and perform authorized penetration testing against simulated clinical systems.
+An isolated, segmented healthcare-imaging cybersecurity homelab used to validate DICOM/PACS security controls, document attack paths, preserve evidence, and practice remediation and retesting.
 
-## Project Status
+> **Status:** Initial penetration-testing phase complete. **35 structured tests (TEST-001 through TEST-035)** were executed. Remediation and retesting are the next phase.
 
-**Security assessment: In progress**
+## Purpose
 
-The lab is functional and the baseline DICOM/HL7 workflows have been validated. Penetration testing is being documented incrementally so that this repository distinguishes between:
+This project combines healthcare imaging knowledge with defensive and offensive security testing. The lab models a simplified clinical imaging environment with separate infrastructure, imaging/clinical, HL7/application, and security-testing segments.
 
-- **Validated functionality** — the clinical workflow works as designed.
-- **Completed security tests** — a test was executed and evidence was captured.
-- **Observed security controls** — a defensive behavior was observed but still needs deeper bypass testing.
-- **Planned tests** — a scenario is in the test plan but is not yet reported as a finding.
+The assessment focused on:
 
-This prevents unverified test ideas from being presented as vulnerabilities.
+- Orthanc PACS REST/API authentication and authorization
+- DICOM C-ECHO, C-FIND, C-GET, C-MOVE, and C-STORE behavior
+- AE Title trust and spoofing resistance
+- Management-plane and DICOM transport encryption
+- DCMTK host security, SSH, patching, logging, permissions, and storage controls
+- Mirth Connect management and HL7 network paths
+- Active Directory password and lockout controls
+- Proxmox management, backup, and storage controls
+- Inter-VLAN segmentation and egress policy
+- Time synchronization, auditability, and evidence integrity
 
----
+## Assessment Snapshot
 
-## Why I Built This
+The complete assessment identified **18 consolidated findings**. Repeated tests that demonstrated the same root cause were intentionally consolidated rather than counted as separate vulnerabilities.
 
-Medical imaging environments combine specialized protocols, legacy assumptions, Windows infrastructure, PACS applications, interface engines, and network segmentation. This homelab gives me a controlled environment to practice securing and testing those workflows without interacting with production healthcare systems.
+| Severity | Open Findings | Primary Themes |
+|---|---:|---|
+| High | 7 | Orthanc REST/API exposure, plaintext transport, unauthorized C-STORE, AE Title spoofing |
+| Medium | 6 + 1 remediated | Host hardening, encryption at rest, backup/recovery, password policy, audit visibility, time sync |
+| Low | 4 | Patch availability, host firewall, Mirth certificate hygiene, Proxmox privileged-auth hardening |
 
-The project focuses on:
+See [`docs/findings.md`](docs/findings.md) for the consolidated finding list and [`docs/test-matrix.md`](docs/test-matrix.md) for all 35 tests.
 
-- DICOM/PACS security testing
-- Healthcare network segmentation
-- DICOM service enumeration
-- AE Title trust and authorization behavior
-- PACS web/API security
-- DICOM metadata manipulation
-- Traffic inspection
-- HL7 interface security
-- Detection and logging
-- Evidence collection and professional reporting
+## Architecture
 
----
-
-## Lab Architecture
+The public repository intentionally omits exact endpoint addresses. VLAN subnet ranges are retained to show segmentation design.
 
 ```mermaid
 flowchart LR
-    Internet((Internet))
-    FW[OPNsense Firewall]
+    Internet((Internet)) --> FW[OPNsense Firewall / Router]
+    FW --> V20[VLAN 20 - Infrastructure\n10.10.20.0/24]
+    FW --> V30[VLAN 30 - Imaging / Clinical\n10.10.30.0/24]
+    FW --> V40[VLAN 40 - Applications / HL7\n10.10.40.0/24]
+    FW --> V50[VLAN 50 - Security / Pentest\n10.10.50.0/24]
 
-    subgraph V20["VLAN 20 — Infrastructure / Admin\n10.10.20.0/24"]
-        AD[Windows Server\nAD / DNS / DHCP]
-    end
+    V20 --> AD[Active Directory / DNS]
+    V30 --> PACS[Orthanc PACS\nDICOM 4242 / Web 8042]
+    V30 --> DCMTK[DCMTK Modality Simulator\nReceiver 11112]
+    V40 --> MIRTH[Mirth Connect\n8443 / 6662 / 6663]
+    V50 --> KALI[Kali Linux\nAuthorized Test Workstation]
 
-    subgraph V30["VLAN 30 — Imaging / Clinical\n10.10.30.0/24"]
-        RAD[Radiology Workstation\nOrthanc PACS + DICOM Viewer]
-        DCMTK[DCMTK Station\nModality Simulator]
-    end
-
-    subgraph V40["VLAN 40 — Applications / HL7\n10.10.40.0/24"]
-        MIRTH[Mirth Connect\nHL7 Interface Engine]
-    end
-
-    subgraph V50["VLAN 50 — Security\n10.10.50.0/24"]
-        KALI[Kali Linux\nPentest Workstation]
-    end
-
-    Internet --> FW
-    FW --> V20
-    FW --> V30
-    FW --> V40
-    FW --> V50
-
-    DCMTK -->|"DICOM 4242"| RAD
-    RAD -->|"DICOM receiver 11112"| DCMTK
-    MIRTH -->|"HL7 6662 / 6663"| RAD
-    KALI -. "Authorized security testing" .-> FW
+    DCMTK -->|DICOM| PACS
+    MIRTH -->|HL7 workflow| PACS
 ```
 
-### Key Services
+More detail: [`docs/architecture.md`](docs/architecture.md)
 
-| Component | Purpose | Publicly Documented Ports |
-|---|---|---:|
-| Orthanc PACS | DICOM storage/query/retrieve | TCP 4242 |
-| Orthanc Web/API | PACS management/API | TCP 8042 |
-| DCMTK receiver | DICOM Store SCP / retrieve testing | TCP 11112 |
-| Mirth Connect | Administration | TCP 8443 |
-| Mirth Connect | HL7 test listener | TCP 6662 |
-| Mirth Connect | HL7-to-Orthanc workflow | TCP 6663 |
-
-Exact host addresses and credentials are intentionally omitted from the public repository.
-
----
-
-## Baseline Workflow Validation
-
-The following functionality was validated before security testing began:
-
-| Workflow | Status |
-|---|---|
-| DICOM C-ECHO | ✅ Validated |
-| DICOM C-STORE | ✅ Validated |
-| DICOM C-FIND | ✅ Validated |
-| DICOM C-MOVE / C-GET | ✅ Validated |
-| DCMTK modality simulation | ✅ Validated |
-| Orthanc PACS operation | ✅ Validated |
-| HL7 ADT workflow | ✅ Validated |
-| HL7 ORM workflow | ✅ Validated |
-| HL7 ORU workflow | ✅ Validated |
-| Mirth channel processing | ✅ Validated |
-| Inter-VLAN firewall policy validation | ✅ Baseline validated |
-
----
-
-## Penetration Testing Areas
-
-### 1. Network & Service Enumeration
-- Identify reachable hosts and exposed services from the security VLAN.
-- Compare observed exposure with intended OPNsense policy.
-- Save scan output for repeatability and evidence.
-
-### 2. DICOM Association & AE Title Testing
-- Verify how PACS and DICOM endpoints handle known and unknown modalities.
-- Test whether AE Title restrictions function as an actual authorization control.
-- Document rejection/acceptance behavior and any spoofing opportunities.
-
-### 3. Orthanc Web/API Testing
-- Enumerate the HTTP attack surface on TCP 8042.
-- Review authentication, authorization, exposed API functions, and configuration.
-- Test only against the isolated lab PACS.
-
-### 4. DICOM Metadata Integrity
-- Modify non-production DICOM metadata using `pydicom`.
-- Send controlled test files through the workflow.
-- Observe whether altered metadata is accepted, logged, or rejected.
-
-### 5. Traffic Inspection
-- Capture authorized lab DICOM/HL7 traffic.
-- Determine whether sensitive metadata is visible in transit.
-- Store only sanitized screenshots or excerpts in this public repository.
-
-### 6. Detection & Monitoring
-- Review Orthanc logs for failed associations, suspicious queries, retrieval failures, and abnormal stores.
-- Build simple detection scripts to turn lab activity into defensive observations.
-
----
-
-## Current Security Assessment Progress
-
-| Test Area | State | Public Evidence |
-|---|---|---|
-| Lab workflow baseline | Complete | Documentation |
-| VLAN/firewall validation | Complete baseline | Sanitized evidence to be added |
-| Clinical VLAN/service enumeration | In progress | Scan excerpts to be added |
-| DCMTK Station enumeration | In progress | Scan excerpts to be added |
-| Known/unknown AE Title behavior | Observed | Sanitized evidence to be added |
-| Orthanc REST/API assessment | In progress | Evidence to be added |
-| DICOM metadata tampering | Script prepared | Test evidence pending |
-| DICOM traffic confidentiality | Planned/ongoing | PCAP excerpt pending |
-| Orthanc log detection | Script prepared | Test evidence pending |
-| HL7 security testing | Planned | — |
-| Privilege escalation/lateral movement | Future phase | — |
-
----
-
-## Repository Layout
+## Repository Structure
 
 ```text
 dicom-pacs-security-homelab/
@@ -170,125 +69,68 @@ dicom-pacs-security-homelab/
 │   ├── architecture.md
 │   ├── scope.md
 │   ├── methodology.md
-│   ├── test-matrix.md
 │   ├── findings.md
-│   ├── evidence-guide.md
-│   └── github-upload-steps.md
+│   ├── test-matrix.md
+│   ├── remediation-roadmap.md
+│   └── evidence-guide.md
+├── reports/
+│   └── README.md
 ├── scripts/
 │   ├── dicom_modifier.py
 │   └── orthanc_log_monitor.py
 ├── evidence/
-│   ├── README.md
-│   ├── raw/          # ignored by Git
-│   └── sanitized/    # safe screenshots/excerpts only
+│   ├── raw/              # intentionally excluded from Git
+│   └── sanitized/
 └── assets/
 ```
 
----
+## Key Security Outcomes
 
-## Tools Used
+### Findings requiring remediation
 
-- Kali Linux
-- Nmap
-- Wireshark / tcpdump
-- DCMTK
-- Orthanc
-- Mirth Connect
-- OPNsense
-- `curl`
-- `pydicom`
-- Python
-- Windows Server / Active Directory
-- Proxmox VE
+- Orthanc REST/API access was not adequately authenticated.
+- Orthanc management traffic used plaintext HTTP.
+- DICOM transport was not protected with TLS.
+- An unregistered AE could perform C-STORE.
+- A registered AE Title could be spoofed from another source when network reachability was intentionally granted for testing.
+- Encryption-at-rest and backup/recovery controls need improvement.
+- Password/lockout and end-to-end audit controls need additional hardening.
 
----
+### Controls that worked
 
-## Example DICOM Commands
+- Incorrect called AE Titles were rejected.
+- Rogue C-FIND, C-GET, and C-MOVE operations were denied while authorized operations succeeded.
+- Inter-VLAN segmentation blocked protected services from the Pentest VLAN after temporary testing rules were removed.
+- DICOM malformed-association testing did not destabilize the service.
+- Final evidence manifests verified with SHA-256.
+- Time synchronization was remediated during the engagement using the approved internal NTP source.
 
-> Example commands use documentation placeholders rather than live endpoint addresses.
+## Public Report
 
-```bash
-# Verify DICOM connectivity
-echoscu -aec ORTHANC <PACS_IP> 4242
+A sanitized PDF version of the final assessment has been prepared for publication. Until the binary report is added to this repository, the complete public test matrix, findings summary, methodology, and remediation roadmap are available in the Markdown documentation.
 
-# Query at study level
-findscu -aec ORTHANC -S \
-  -k 0008,0052=STUDY \
-  <PACS_IP> 4242
+Exact endpoint IP addresses and selected infrastructure identifiers were removed from the public report. Raw packet captures and original evidence are **not** published.
 
-# Send a lab DICOM object
-storescu -aec ORTHANC <PACS_IP> 4242 test-image.dcm
+## Remediation Phase
 
-# Start a DCMTK receiver
-storescp 11112 -od ./received
-```
+The next phase will address the highest-risk findings first, then rerun the relevant tests to produce a separate remediation/retest record. The original evidence and initial assessment report remain immutable as the baseline.
 
----
+Priority order:
 
-## Findings Philosophy
+1. Enable Orthanc authentication and restrict management access.
+2. Enable HTTPS for management traffic and DICOM TLS where supported.
+3. Disable permissive C-STORE behavior and strengthen modality trust beyond AE Title alone.
+4. Harden DCMTK SSH, host firewall, and account policy.
+5. Improve encryption at rest and backup/recovery validation.
+6. Improve audit visibility and retention.
+7. Close remaining patch, certificate, and privileged-authentication hygiene gaps.
 
-A GitHub portfolio should show **evidence and reasoning**, not just attack commands.
+## Safety / Ethics
 
-Each confirmed finding will contain:
+This repository documents testing performed only against systems owned and controlled in an isolated homelab. Synthetic DICOM data was used for controlled write-path testing. No production healthcare systems, real patient data, or third-party networks were targeted.
 
-1. Title
-2. Affected component
-3. Risk
-4. Description
-5. Reproduction summary
-6. Evidence
-7. Impact
-8. Remediation
-9. Retest status
+Do not use the material in this repository against systems without explicit authorization.
 
-See [`docs/findings.md`](docs/findings.md).
+## License
 
----
-
-## Safety & Ethics
-
-This project is performed exclusively in an isolated homelab that I own and control. It is intended for cybersecurity education, healthcare security research, defensive validation, and professional development.
-
-No production healthcare system, real patient data, or third-party infrastructure is targeted.
-
----
-
-## Public Repository Data Handling
-
-This repository intentionally excludes:
-
-- Credentials and secrets
-- Exact endpoint IP addresses
-- Real patient information
-- Raw DICOM datasets containing identifying information
-- Raw packet captures
-- Unredacted logs
-- Private keys
-- Tokens
-- Internal configuration backups
-
-Only synthetic or sanitized evidence should be committed.
-
----
-
-## Roadmap
-
-- [x] Build segmented DICOM/HL7 homelab
-- [x] Validate DICOM workflows
-- [x] Validate HL7 workflows
-- [x] Establish pentest evidence structure
-- [ ] Complete DCMTK Station assessment
-- [ ] Complete Orthanc DICOM security assessment
-- [ ] Complete Orthanc Web/API assessment
-- [ ] Capture and document DICOM transport security test
-- [ ] Test DICOM metadata integrity controls
-- [ ] Expand Orthanc monitoring detections
-- [ ] Perform HL7 interface security assessment
-- [ ] Publish finalized findings and remediation
-- [ ] Produce final penetration test report
-
----
-
-## Disclaimer
-
-For educational and authorized security-testing purposes only.
+Code and documentation are provided under the MIT License unless otherwise noted.

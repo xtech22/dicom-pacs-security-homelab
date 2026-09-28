@@ -1,112 +1,28 @@
-# Findings
+# Consolidated Findings
 
-This file intentionally separates **confirmed findings** from **observations** and **test candidates**.
+Repeated tests that demonstrated the same root cause were consolidated to avoid inflating the finding count.
 
-Do not promote a test idea to a vulnerability until reproducible evidence exists.
+| ID | Finding | Severity | Status | Primary Test(s) |
+|---|---|---|---|---|
+| F-01 | Unauthenticated Orthanc REST API read/download access | High | Open | 001, 007, 026 |
+| F-02 | Unauthenticated DICOM object creation/deletion via REST API | High | Open | 002 |
+| F-03 | Unauthenticated Orthanc modality configuration modification | High | Open | 010 |
+| F-04 | Orthanc management/API traffic uses plaintext HTTP | High | Open | 011, 025 |
+| F-05 | DICOM transport is unencrypted | High | Open | 005, 006, 029 |
+| F-06 | Unregistered DICOM AE can inject objects with C-STORE | High | Open | 009, 032 |
+| F-07 | Registered AE Title can be spoofed from another host | High | Open | 033 |
+| F-08 | DCMTK SSH broadly exposed without host-based source restriction | Medium | Open | 012 |
+| F-09 | Sensitive lab storage lacks verified encryption at rest | Medium | Open | 018 |
+| F-10 | Backup and recovery controls are insufficient | Medium | Open | 019 |
+| F-11 | Weak Active Directory password policy | Medium | Open | 027 |
+| F-12 | Weak local Linux password/lockout controls | Medium | Open | 027 |
+| F-13 | Insufficient end-to-end security audit visibility | Medium | Open | 016, 028 |
+| F-14 | Time synchronization and audit timestamp integrity | Medium | Remediated | 024 |
+| F-15 | DCMTK security updates unavailable without ESM Apps | Low | Open | 015 |
+| F-16 | DCMTK host firewall not enforcing inbound source restrictions | Low | Open | 021 |
+| F-17 | Mirth management certificate requires hardening | Low | Open | 025 |
+| F-18 | Proxmox privileged administration lacks TFA/delegation | Low | Open | 026 |
 
----
+## Public-Safe Note
 
-## Security Control Observation — AE Title Filtering
-
-**Status:** Observed; bypass testing pending  
-**Risk:** Informational  
-**Affected component:** Orthanc DICOM service
-
-### Description
-
-During baseline testing, legitimate DICOM communication was observed to depend on configured/known modality information. Unknown or non-approved modality behavior should be documented with sanitized association evidence before this is treated as a security-control conclusion.
-
-### Why it matters
-
-AE Title restrictions can reduce accidental or unauthorized DICOM associations, but an AE Title is an identifier rather than a strong authentication secret. The next test phase should determine whether a client on an allowed network path can impersonate a trusted AE Title.
-
-### Evidence Needed
-
-- Known-AE successful association
-- Unknown-AE failed association
-- Orthanc log entries for both cases
-- Network source context
-- Spoofed-AE retest result
-
-### Recommendation
-
-Treat AE Title allowlisting as one layer of defense, not as the sole authentication mechanism. Pair it with network segmentation, host-level controls, secure transport where supported, logging, and strong web/API authentication.
-
----
-
-## Test Candidate — DICOM Transport Confidentiality
-
-**Status:** Not yet published as a finding  
-**Risk:** To be determined
-
-### Test Objective
-
-Capture an authorized lab DICOM transfer and verify whether patient/study metadata is readable in transit.
-
-### Evidence Required Before Reporting
-
-- Packet capture from the isolated lab
-- Sanitized screenshot showing the protocol/metadata exposure
-- Confirmation that no TLS or equivalent encrypted transport protected the tested path
-- Clear identification of the affected workflow
-
----
-
-## Test Candidate — Orthanc Web/API Access Control
-
-**Status:** Assessment in progress  
-**Risk:** To be determined
-
-### Test Objective
-
-Determine which Orthanc HTTP/API resources are reachable from the security VLAN and whether authentication and authorization are correctly enforced.
-
-### Evidence Required Before Reporting
-
-- Nmap/service evidence
-- `curl` request/response excerpts
-- Authentication behavior
-- Authorization boundary test
-- Sanitized screenshots or HTTP excerpts
-
----
-
-## Finding Template
-
-Copy this section for each confirmed issue.
-
-### F-XXX — Finding Title
-
-**Severity:** Critical / High / Medium / Low / Informational  
-**Affected component:**  
-**Status:** Open / Remediated / Accepted / Retest required
-
-#### Description
-
-Describe what was observed and the security condition that caused it.
-
-#### Reproduction Summary
-
-1. Starting position
-2. Test action
-3. Observed result
-4. Reproduction condition
-
-#### Evidence
-
-- Screenshot:
-- Command output:
-- Log excerpt:
-- Packet excerpt:
-
-#### Impact
-
-Explain what an attacker could accomplish in the context of a healthcare imaging workflow.
-
-#### Recommendation
-
-Provide specific defensive actions.
-
-#### Retest
-
-Document the remediation and the result of the verification test.
+Exact endpoint addresses are intentionally omitted. The sanitized PDF contains the detailed descriptions, impact statements, and remediation recommendations without publishing the private addressing plan.

@@ -2,46 +2,41 @@
 
 ## Segmentation Model
 
-The homelab separates administrative infrastructure, clinical imaging, healthcare applications, and security testing into dedicated VLANs.
+The public documentation retains subnet-level segmentation while intentionally omitting exact endpoint addresses.
 
-| VLAN | Function | Network |
-|---|---|---|
-| 20 | Infrastructure / Administration | `10.10.20.0/24` |
-| 30 | Imaging / Clinical | `10.10.30.0/24` |
-| 40 | Applications / HL7 | `10.10.40.0/24` |
-| 50 | Security / Pentest | `10.10.50.0/24` |
+| VLAN | Subnet | Function | Representative Assets |
+|---|---|---|---|
+| 20 | `10.10.20.0/24` | Infrastructure | Active Directory, DNS |
+| 30 | `10.10.30.0/24` | Imaging / Clinical | Orthanc PACS, Radiology Workstation, DCMTK Station |
+| 40 | `10.10.40.0/24` | Applications / HL7 | Mirth Connect |
+| 50 | `10.10.50.0/24` | Security / Pentest | Kali Linux |
 
-OPNsense provides routing and firewall enforcement between segments.
+## Logical Topology
 
-## Clinical Segment
+```mermaid
+flowchart TB
+    WAN((Internet)) --> FW[OPNsense]
+    FW --> V20[VLAN 20 Infrastructure]
+    FW --> V30[VLAN 30 Imaging / Clinical]
+    FW --> V40[VLAN 40 Applications / HL7]
+    FW --> V50[VLAN 50 Security / Pentest]
 
-The clinical VLAN contains:
+    V20 --> AD[AD / DNS]
+    V30 --> ORTHANC[Orthanc PACS]
+    V30 --> DCMTK[DCMTK Station]
+    V40 --> MIRTH[Mirth Connect]
+    V50 --> KALI[Kali]
 
-- A Windows radiology workstation
-- Orthanc PACS
-- A DICOM viewer
-- A separate DCMTK modality-simulator station
+    DCMTK -->|TCP 4242 DICOM| ORTHANC
+    ORTHANC -->|C-MOVE to TCP 11112| DCMTK
+    MIRTH -->|HL7 TCP 6662 / 6663| V30
+```
 
-Primary DICOM services:
+## Design Intent
 
-- Orthanc DICOM: TCP 4242
-- Orthanc Web/API: TCP 8042
-- DCMTK Store SCP receiver: TCP 11112
+- Pentest VLAN should not directly reach protected internal services under normal policy.
+- DCMTK should reach approved Orthanc DICOM services but not unrestricted management or Internet services.
+- Only required HL7 application paths should be permitted between clinical and application segments.
+- DICOM authorization should distinguish approved modalities from rogue identities.
 
-## Applications Segment
-
-Mirth Connect simulates healthcare interface-engine workflows and provides HL7 message processing.
-
-Publicly documented ports used by this project:
-
-- TCP 8443 — Mirth administration
-- TCP 6662 — HL7 test listener
-- TCP 6663 — HL7-to-Orthanc workflow
-
-## Security Segment
-
-Kali Linux is isolated in the security VLAN and is used as the authorized penetration-testing workstation.
-
-## Public Documentation Decision
-
-This repository intentionally publishes network ranges but not individual endpoint IP addresses. That keeps the architecture understandable while avoiding unnecessary disclosure of system-specific addressing.
+Exact endpoint addresses are retained only in the private lab documentation and original evidence package.
