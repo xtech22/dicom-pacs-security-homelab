@@ -1,43 +1,28 @@
-# Secrets
-.env
-.env.*
+# Never publish raw assessment evidence
+/evidence/raw/*
+!/evidence/raw/.gitkeep
+
+# Credentials / keys / env files
 *.pem
 *.key
 *.p12
 *.pfx
+.env
+.env.*
+*.secret
 *credentials*
-*secrets*
-*token*
 
-# Healthcare / DICOM raw data
-*.dcm
-*.dicom
-
-# Packet captures
+# Packet captures are private by default
 *.pcap
 *.pcapng
-*.cap
 
-# Logs and scan working data
-*.log
-*.gnmap
-*.xml
-
-# Raw evidence is never public
-evidence/raw/*
-!evidence/raw/.gitkeep
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
 
 # Python
 __pycache__/
-*.py[cod]
+*.pyc
 .venv/
-venv/
-
-# OS/editor
-.DS_Store
-.vscode/
-.idea/
-
-# Temporary files
-*.tmp
-*.bak

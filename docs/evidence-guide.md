@@ -1,53 +1,24 @@
 # Evidence Guide
 
-A strong GitHub security portfolio shows enough evidence to prove the work without leaking sensitive data.
+The private assessment maintained per-test evidence directories with command output, configuration captures, synthetic DICOM objects, packet captures, and SHA-256 manifests where available.
 
-## Publish
+## What is Public
 
-Good public evidence includes:
+- Sanitized final report
+- Test matrix and consolidated findings summary
+- Methodology and architecture documentation
+- Non-secret helper scripts
 
-- Cropped terminal screenshots
-- Sanitized Nmap excerpts
-- Orthanc log excerpts with identifiers removed
-- DICOM association success/failure screenshots
-- Redacted Wireshark screenshots
-- `curl` request/response snippets without credentials/tokens
-- Before/after firewall-rule validation
-- Screenshots demonstrating remediation and retesting
+## What is Intentionally Private
 
-## Do Not Publish
+- Raw PCAP files
+- Original screenshots containing exact host addresses
+- Unredacted command output
+- Authentication material, private keys, tokens, passwords, shell-history secrets, or other credentials
+- Original evidence packages and manifests tied to private endpoint details
 
-- Real patient data
-- Unsanitized `.dcm` files
-- Full PCAPs containing sensitive data
-- Passwords
-- API keys
-- cookies/session tokens
-- private keys
-- exact host addresses when they add no portfolio value
-- configuration exports containing secrets
+`evidence/raw/` is ignored by Git and should remain local only.
 
-## Screenshot Naming Convention
+## Evidence Integrity
 
-Use:
-
-```text
-<test-id>_<short-description>_<yyyy-mm-dd>.png
-```
-
-Examples:
-
-```text
-NET-01_nmap-clinical-services_2026-08-21.png
-DCM-02_unknown-ae-rejected_2026-08-21.png
-API-01_orthanc-http-enumeration_2026-08-21.png
-```
-
-## Evidence Workflow
-
-1. Save the original to `evidence/raw/`.
-2. Duplicate it.
-3. Crop/redact the copy.
-4. Place the sanitized copy in `evidence/sanitized/`.
-5. Reference the sanitized file from `docs/test-matrix.md` or `docs/findings.md`.
-6. Never force-add ignored raw evidence to Git.
+Final validation verified the reviewed SHA-256 evidence manifests without integrity failures. Public artifacts are derivatives of the original evidence and are not a replacement for the private source package.

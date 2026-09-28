@@ -1,44 +1,31 @@
 # Scope and Rules of Engagement
 
-## Objective
-
-Assess the security posture of a self-hosted DICOM/PACS and HL7 homelab while preserving normal clinical workflow behavior.
-
 ## In Scope
 
-- OPNsense firewall policy relevant to the lab VLANs
-- Orthanc PACS
-- Orthanc DICOM service
-- Orthanc Web/API
-- DCMTK modality-simulator station
-- DICOM Store SCP receiver
-- Radiology workstation
-- Mirth Connect interfaces used by the lab
-- Network paths between the security, clinical, application, and infrastructure VLANs
+- Orthanc PACS and REST/API management surface
+- DICOM workflow endpoints and authorization behavior
+- DCMTK modality-simulation host
+- Mirth Connect / HL7 integration paths
+- Active Directory controls relevant to the lab
+- Proxmox management, storage, and backup controls
+- OPNsense segmentation and egress policy
+- Logging, time synchronization, certificates, and evidence integrity
 
-## Out of Scope
+## Objectives
 
-- Internet hosts not owned by the lab operator
-- Production healthcare systems
-- Employer/customer systems
-- Real patient data
-- Destructive testing that could affect systems outside the homelab
+- Validate PACS management/API authentication and authorization.
+- Validate calling/called AE controls and query/retrieve/store behavior.
+- Evaluate management and DICOM transport encryption.
+- Assess host exposure, SSH, permissions, privilege boundaries, patch status, logging, secrets, and encryption at rest.
+- Review backup/recovery security and recoverability indicators.
+- Validate least-privilege network segmentation and egress.
+- Confirm post-test restoration and evidence integrity.
 
-## Test Origin
+## Safety Constraints
 
-The primary security-testing workstation is Kali Linux on the dedicated security VLAN.
-
-## Data Rules
-
-Only synthetic or de-identified data may be used. Evidence intended for GitHub must be reviewed for:
-
-- Patient names
-- Patient IDs
-- accession numbers
-- dates of birth
-- IP addresses that should remain private
-- usernames
-- passwords
-- API tokens
-- session cookies
-- hostnames revealing private information
+- Authorized testing only inside the isolated homelab.
+- Synthetic DICOM data only for controlled write-path testing.
+- No real patient data.
+- No destructive modification of legitimate studies.
+- No brute-force or intentional account-lockout campaigns.
+- Temporary firewall exceptions were narrowly scoped and removed after testing.
