@@ -74,7 +74,8 @@ dicom-pacs-security-homelab/
 │   ├── remediation-roadmap.md
 │   └── evidence-guide.md
 ├── reports/
-│   └── README.md
+│   ├── README.md
+│   └── DICOM_PACS Pentest_Report SANITIZED Github.pdf
 ├── scripts/
 │   ├── dicom_modifier.py
 │   └── orthanc_log_monitor.py
@@ -107,7 +108,9 @@ dicom-pacs-security-homelab/
 
 ## Public Report
 
-A sanitized PDF version of the final assessment has been prepared for publication. Until the binary report is added to this repository, the complete public test matrix, findings summary, methodology, and remediation roadmap are available in the Markdown documentation.
+The sanitized public version of the completed assessment is available here:
+
+[**View the DICOM/PACS Penetration Test Report — Public Sanitized PDF**](reports/DICOM_PACS%20Pentest_Report%20SANITIZED%20Github.pdf)
 
 Exact endpoint IP addresses and selected infrastructure identifiers were removed from the public report. Raw packet captures and original evidence are **not** published.
 
